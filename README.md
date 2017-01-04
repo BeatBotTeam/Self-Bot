@@ -16,9 +16,9 @@ cd SelfBot
 
 # Commands
 
-* Use $help command to receive commands help message*
+* Use $help command to receive commands help message
 
 
 # [BeatBotTeam](telegram.me/beatBot_Channel)
 
-* Good luck *
+* Good luck 
