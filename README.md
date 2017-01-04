@@ -9,6 +9,8 @@ git clone https://gitlab.com/BeatBotTeam/SelfBot.git
 
 cd SelfBot
 
+chmod +x launch.sh
+
 ./launch.sh install
 
 ./launch.sh
