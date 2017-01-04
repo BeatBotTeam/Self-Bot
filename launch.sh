@@ -43,10 +43,11 @@ echo -e "-${RED} SelfBot installed ! ${NC}Now run ${CYAN}./launch.sh ${NC}comman
 }
  if [ "$1" = "install" ]; then
   install
-  fi
+  else
  if [ ! -f ./tg ]; then
     echo "tg binary not found"
     echo "Run $0 install"
     exit 1
   fi
 ./tg -s ./bot.lua 
+fi
