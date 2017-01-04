@@ -35,6 +35,13 @@ sudo apt-get dist-upgrade
 sudo ppa-purge
 sudo pip3 install redis
 sudo service redis-server restart
+wget http://luarocks.org/releases/luarocks-2.2.2.tar.gz
+ tar zxpf luarocks-2.2.2.tar.gz
+ rm luarocks-2.2.2.tar.gz
+ cd luarocks-2.2.2
+ ./configure; sudo make bootstrap
+ cd ..
+sudo luarocks install serpent
 chmod 777 tg
 RED='\033[0;31m'
 NC='\033[0m'
