@@ -49,5 +49,5 @@ echo -e "-${RED} SelfBot installed ! ${NC}Now run ${CYAN}./launch.sh ${NC}comman
     echo "Run $0 install"
     exit 1
   fi
-./tg -s ./bot.lua 
+./tg -s ./SelfBot.lua 
 fi
