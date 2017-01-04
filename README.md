@@ -3,7 +3,7 @@
 # Installation
 
 ```sh
-# Tested on Ubuntu 14.04. For other OSs
+# Tested on Ubuntu 14.04
 
 git clone https://gitlab.com/BeatBotTeam/SelfBot.git
 
