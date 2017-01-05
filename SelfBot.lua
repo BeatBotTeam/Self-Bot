@@ -3038,9 +3038,8 @@ function televardump(msg,value)
   local text = json:encode(value)
   bot.sendMessage(msg.chat_id_, msg.id_, 1, text, 'html')
   end
-
 function run(msg,data)
-   vardump(data)
+   --vardump(data)
   --televardump(msg,data)
 	if not db.hash.myself then
          function cb(a,b,c)
@@ -3068,7 +3067,29 @@ function run(msg,data)
     end
 
     -------------------------------------------
+	if text and db.hash.typing and db.hash.typing['chat'..msg.chat_id_] then
+		bot.sendChatAction(msg.chat_id_,'Typing')
+		end
+	if text and get('markread'..msg.chat_id_) then
+	bot.mark_read(msg.chat_id_, {[0] = msg.id_})
+		end
 		 if msg.send_state_.ID == "MessageIsSuccessfullySent" then
+		if text == '$markread on' then
+			set('markread'..msg.chat_id_,true)
+			send(msg,'*Done !*\n_Now all new messages in this chat will be read automaticlly ._')
+			end
+		if text == '$markread off' then
+			del('markread'..msg.chat_id_)
+			send(msg,'*Done !*\n_Auto read disabled ._')
+			end
+		if text == '$typing on' then
+			set('typing',true,'chat'..msg.chat_id_)
+			send(msg,'*Done !*\n__')
+			end
+		if text == '$typing off' then
+			set('typing',nil,'chat'..msg.chat_id_)
+			send(msg,'*Done !*\n_ ._')
+			end
 				if text == '$online' then
 				set('bot_status'..msg.chat_id_,true)
 				send(msg,'*Done!*\n_Now bot will be working here ._')
