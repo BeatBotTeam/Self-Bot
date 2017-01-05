@@ -3038,7 +3038,7 @@ function televardump(msg,value)
   end
 
 function run(msg,data)
-   vardump(data)
+   --vardump(data)
   --televardump(msg,data)
 	if not db.hash.myself then
          function cb(a,b,c)
