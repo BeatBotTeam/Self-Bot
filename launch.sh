@@ -1,6 +1,7 @@
  install() {
 wget "https://valtman.name/files/telegram-cli-1222"
 mv telegram-cli-1222 tg
+chmod +x tg
 sudo apt-get install libreadline-dev
 sudo apt install libreadline-dev 
 sudo apt-get install libreadline6 
