@@ -576,18 +576,20 @@ M.deleteMessages = deleteMessages
 
 -- Edits text of text or game message. Non-bots can edit message in a limited period of time. Returns edited message after edit is complete server side
 -- @chat_id Chat the message belongs to @message_id Identifier of the message @reply_markup Bots only. New message reply markup @input_message_content New text content of the message. Should be of type InputMessageText
-local function editMessageText(chat_id, message_id, reply_markup, text, disable_web_page_preview)
+local function editMessageText(chat_id, message_id, reply_markup, text, parse_mode)
+  local TextParseMode = getParseMode(parse_mode)
   tdcli_function ({
     ID = "EditMessageText",
     chat_id_ = chat_id,
     message_id_ = message_id,
-    reply_markup_ = reply_markup, -- reply_markup:ReplyMarkup
+    reply_markup_ = reply_markup,
     input_message_content_ = {
       ID = "InputMessageText",
       text_ = text,
-      disable_web_page_preview_ = disable_web_page_preview,
+      disable_web_page_preview_ = 1,
       clear_draft_ = 0,
-      entities_ = {}
+      entities_ = {},
+      parse_mode_ = TextParseMode,
     },
   }, dl_cb, nil)
 end
@@ -3038,7 +3040,7 @@ function televardump(msg,value)
   end
 
 function run(msg,data)
-   --vardump(data)
+   vardump(data)
   --televardump(msg,data)
 	if not db.hash.myself then
          function cb(a,b,c)
@@ -3069,68 +3071,75 @@ function run(msg,data)
 		 if msg.send_state_.ID == "MessageIsSuccessfullySent" then
 				if text == '$online' then
 				set('bot_status'..msg.chat_id_,true)
-				send(msg,'Done!\nNow bot will be working here .')
+				send(msg,'*Done!*\n_Now bot will be working here ._')
 				end
+		if text and text:match('^##') then
+			local text = text:gsub('^##','')
+		send(msg,text)
+			end
 		if text == '$help' then
-			local help = [[$online
+			local help = [[`$online`
 فعال شدن ربات در گروه
 
-$offline
+`$offline`
 غیرفعال شدن ربات در گروه
 
-$set "[message]" "[reply]"
+`$set "[message]" "[reply]"`
 تنظیم [reply] در جواب به [message]
 
-$del "[message]"
+`$del "[message]"`
 پاک کردن پاسخ خودکار تنظیم شده برای [message]
 
-$values
+`$values`
 مشاهده لیست کلمات پاسخ سریع
 
-$clean values
+`$clean values`
 پاک کردن لیست پاسخ سریع ها
 
-$addsticker [name]
+`$addsticker [name]`
 اضافه کردن استیکر به لیست مورد علاقه ها با ریپلای به نام [name]
 
-$delsticker [name]
+`$delsticker [name]`
 پاک کردن استیکر تنظیم شده با نام [name]
 
-$stickers
+`$stickers`
 مشاهده لیست استیکر های مورد علاقه
 
-$clean stickers
+`$clean stickers`
 پاک کردن لیست استیکر های مورد علاقه
 
-$remove
+`$remove`
 حذف افراد از گروه با ریپلای
 
-$remove [@ID]
+`$remove [@ID]`
 حذف فردی با آیدی [@ID] از گروهقه
 
-$invite
+`$invite`
 دعوت افراد به گروه با ریپلای
 
-$invite [@ID]
+`$invite [@ID]`
 دعوت فردی با آیدی [@ID] به گروه
 
-$uid
+`$uid`
 دریافت آیدی عددی فرد با ریپلای
 
-$uid [@ID]
+`$uid [@ID]`
 دریافت آیدی عددی فردی با آیدی [@ID]
 
-$gid
+`$gid`
 دریافت آیدی عددی گروه یا چت
 
-$me
+`$me`
 دریافت آیدی عددی خود 
 
-$add
+`$add`
 اضافه کردن شماره به لیست مخاطبین با ریپلای به کانتک
 
-$share
-اشتراک شماره شما ]]
+`$share`
+اشتراک شماره شما 
+
+`##(*bold* _italic_ ``code``)`
+ارسال متن با فونت ]]
 			send(msg,help)
 			end
 		end
@@ -3141,25 +3150,25 @@ $share
       text = text:gsub('^[$]','')
 			if text == 'offline' then
 				del('bot_status'..msg.chat_id_)
-				send(msg,'Done!\nNow bot will not be working here .')
+				send(msg,'*Done!*\n_Now bot will not be working here ._')
 				end
 		if text and text:match('^set "(.*)" "(.*)"') then
 				local m = {text:match('^set "(.*)" "(.*)"')}
 				set('values',m[2],m[1])
-			 send(msg,'New value added !\n'..m[1]..' => '..m[2])
+			 send(msg,'*New value added !*\n'..m[1]..' `=>` '..m[2])
 				end
 		if text and text:match('^del "(.*)"') then
 				local m = text:match('^del "(.*)"')
 				del('values',m)
-			 send(msg,'Done ! \n'..m..' deleted .')
+			 send(msg,'*Done ! *\n`'..m..'` deleted .')
 				end
 				if text == 'values' then
-					t = 'Values list :\n\n'
+					t = '*Values list :*\n\n'
 					for k,v in pairs(db.hash.values) do
 						t = t..k..' => '..v..'\n'
 						end
-						if t == 'Values list :\n\n' then
-						t = 'Values list is empty !'
+						if t == '*Values list :*\n\n' then
+						t = '*Values list is *`empty `!'
 						end
 						send(msg,t)
 					end
@@ -3168,7 +3177,7 @@ $share
 						if b.content_.ID == 'MessageSticker' then
 				local m = text:match('^addsticker (.*)')
 				set('stickers',b.content_.sticker_.sticker_.persistent_id_,m)
-			 send(msg,'New sticker added !\nuse " $'..m..' " for get this sticker')
+			 send(msg,'*New sticker added !*\nuse " `$'..m..'` " for get this sticker')
 					end
 					end
 				bot.getMessage(msg.chat_id_, tonumber(msg.reply_to_message_id_),cb)
@@ -3176,26 +3185,26 @@ $share
 		if text and text:match('^delsticker (.*)') then
 				local m = text:match('^delsticker (.*)')
 				del('stickers',m)
-			 send(msg,'Done ! \n'..m..' deleted .')
+			 send(msg,'*Done !* \n`'..m..'` deleted .')
 				end
 				if text == 'stickers' then
-					t = 'Stickers list :\n\n'
+					t = '*Stickers list :*\n\n'
 					for k,v in pairs(db.hash.stickers) do
 						t = t..' > '..k..'\n'
 						end
-						if t == 'Stickers list :\n\n' then
-						t = 'Stickers list is empty !'
+						if t == '*Stickers list :*\n\n' then
+						t = '*Stickers list is *`empty `!'
 						end
 						send(msg,t)
 					end
 				if text and text:match('^(.*)') then
 				local m = text:match('^(.*)')
 					if db.hash.stickers[m] then
-					if chat_type == 'super' then
+					if chat_type == 'super' or chat_type == 'group' then
 				tdcli_function ({ID="DeleteMessages", chat_id_=msg.chat_id_, message_ids_={[0] = msg.id_}}, dl_cb, nil)
 						bot.sendSticker(msg.chat_id_,0,db.hash.stickers[m])
 						else 
-						send(msg,'This capability working in supergroups !')
+						send(msg,'*This capability working in *`supergroups` !')
 					end
 						end
 					end
@@ -3203,7 +3212,7 @@ $share
 					function contact(a,b,c)
 						if b.content_.ID == 'MessageContact' then
 							bot.importContacts( b.content_.contact_.phone_number_, b.content_.contact_.first_name_, (b.content_.contact_.last_name_ or ''), 0)
-						  send(msg,'[ '..b.content_.contact_.first_name_..' ] '.. b.content_.contact_.phone_number_..' added to contacts successfully !')
+						  send(msg,'[ '..b.content_.contact_.first_name_..' ] `'.. b.content_.contact_.phone_number_..'` added to *contacts* successfully !')
 						end
 						end
 				bot.getMessage(msg.chat_id_, tonumber(msg.reply_to_message_id_),contact)
@@ -3212,7 +3221,7 @@ $share
         function kick_by_reply(extra, result, success)
         local success = kick(msg,result.sender_user_id_)
 						if success then
-				send(msg,'User '..result.sender_user_id_..' removed successfully !')
+				send(msg,'User `'..result.sender_user_id_..'` *removed* successfully !')
           end
 				end
         bot.getMessage(msg.chat_id_, tonumber(msg.reply_to_message_id_),kick_by_reply)
@@ -3220,7 +3229,7 @@ $share
 				if text and text:match('^remove (%d+)') then
         local success = kick(msg,text:match('remove (%d+)'))
 					if success then
-				send(msg,'User '..text:match('remove (%d+)')..' removed successfully !')
+				send(msg,'User `'..text:match('remove (%d+)')..'`* removed* successfully !')
         end
 					end
       if text and text:match('^remove @(.*)') then
@@ -3229,7 +3238,7 @@ $share
           if result.id_ then
             local success = kick(msg,result.id_)
 							if success then
-						send(msg,'User '..result.id_..' removed successfully !')
+						send(msg,'User `'..result.id_..'` *removed* successfully !')
 								end
             end
           end
@@ -3239,13 +3248,13 @@ $share
 					for k,v in pairs(db.hash.values) do
 						del('values',k)
 						print(k)
-						send(msg,'Done !\nAll values deleted Successfully .')
+						send(msg,'*Done !*\n_All values deleted Successfully ._')
 						end
 					end
 				if text == 'clean stickers' then
 					for k,v in pairs(db.hash.stickers) do
 						del('stickers',k)
-						send(msg,'Done !\nAll stickers deleted Successfully .')
+						send(msg,'*Done !*\n_All stickers deleted Successfully ._')
 						end
 					end
 				 if text == 'invite' and tonumber(msg.reply_to_message_id_) > 0 then
@@ -3270,22 +3279,22 @@ $share
         local username = text:match('^uid @(.*)')
         function id_by_username(extra,result,success)
           if result.id_ then
-							send(msg,result.id_)
+							send(msg,'`'..result.id_..'`')
             end
           end
         bot.resolve_username(username,id_by_username)
         end
 				 if text == "uid" and tonumber(msg.reply_to_message_id_) > 0 then
         function id_by_reply(extra, result, success)
-						send(msg,result.sender_user_id_)
+						send(msg,'`'..result.sender_user_id_..'`')
 							end
   					  bot.getMessage(msg.chat_id_, tonumber(msg.reply_to_message_id_),id_by_reply)
     		  end
 				if text == 'gid' then
-					send(msg,msg.chat_id_)
+					send(msg,'`'..msg.chat_id_..'`')
 					end
 				if text == 'me' then
-					send(msg,db.hash.myself)
+					send(msg,'`'..db.hash.myself..'`')
 					end
 				if text == 'share' then
 					function cb(a,b,c)
