@@ -3084,11 +3084,11 @@ function run(msg,data)
 			end
 		if text == '$typing on' then
 			set('typing',true,'chat'..msg.chat_id_)
-			send(msg,'*Done !*\n__')
+			send(msg,'*Done !*')
 			end
 		if text == '$typing off' then
 			set('typing',nil,'chat'..msg.chat_id_)
-			send(msg,'*Done !*\n_ ._')
+			send(msg,'*Done !*')
 			end
 				if text == '$online' then
 				set('bot_status'..msg.chat_id_,true)
