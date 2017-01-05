@@ -1,4 +1,5 @@
-do local _ = {
+do
+    local _ = {
   hash = {
     files = {
     },
