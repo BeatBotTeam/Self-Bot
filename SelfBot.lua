@@ -2088,7 +2088,7 @@ local function sendSticker(chat_id, reply_to_message_id, sticker)
    --   height_ = 0
   --  },
     width_ = 0,
-    height_ = 0
+    height_ = 0,
      },
     }, nil,nil)
 end
@@ -2113,15 +2113,9 @@ local function sendVideo(chat_id, reply_to_message_id, video, caption)
     input_message_content_ = {
       ID = "InputMessageVideo",
       video_ = getInputFile(video),
-      --thumb_ = {
-        --ID = "InputThumb",
-        --path_ = path,
-        --width_ = width,
-        --height_ = height
-      --},
-      duration_ = duration or '',
-      width_ = width or '',
-      height_ = height or '',
+      duration_ = '',
+      width_ = '',
+      height_ = '',
       caption_ = caption or ''
     },
   }, dl_cb, nil)
@@ -2975,6 +2969,8 @@ function vardump(value)
   print(serpent.block(value, {comment=false}))
 end
 function dl_cb(arg, data)
+	--vardump(data)
+	--vardump(arg)
 end
 function save(data)
 local file = 'database.lua'
@@ -3034,13 +3030,8 @@ function kick(msg,user)
   bot.changeChatMemberStatus(msg.chat_id_, user, "Kicked")
 	return true
   end
-function televardump(msg,value)
-  local text = json:encode(value)
-  bot.sendMessage(msg.chat_id_, msg.id_, 1, text, 'html')
-  end
 function run(msg,data)
    --vardump(data)
-  --televardump(msg,data)
 	if not db.hash.myself then
          function cb(a,b,c)
          set('myself',b.id_)
@@ -3129,6 +3120,18 @@ function run(msg,data)
 `$clean stickers`
 پاک کردن لیست استیکر های مورد علاقه
 
+`$addgif [name]`
+اضافه کردن گیف به لیست مورد علاقه ها با ریپلای به نام [name]
+
+`$delgif [name]`
+پاک کردن گیف تنظیم شده با نام [name]
+
+`$gif`
+مشاهده لیست گیف های مورد علاقه
+
+`$clean gifs`
+پاک کردن لیست گیف های مورد علاقه
+
 `$remove`
 حذف افراد از گروه با ریپلای
 
@@ -3173,6 +3176,24 @@ function run(msg,data)
 
 `$typing off`
 غیرفعال شدن حالت تایپینگ بعد از هر پیام در آن چت به صورت اتوماتیک
+
+`$save [name]`
+ذخیره فایل به نام [name] با ریپلای
+
+`$delfile [name]`
+پاک کردن فایل ذخیره شده با نام [name]
+
+`$get [name]`
+دریافت فایل ذخیره شده با نام [name]
+
+`$get [name] "[caption]"`
+دریافت فایل ذخیره شده با نام [name] با زیرنویس [caption]
+
+`$files`
+مشاهده لیست فایل های ذخیره شده به همراه فرمت فایل
+
+`$clean files`
+پاک کردن لیست فایل های ذخیره شده 
 ]]
 			send(msg,help)
 			end
@@ -3206,6 +3227,31 @@ function run(msg,data)
 						end
 						send(msg,t)
 					end
+				if text and text:match('^addgif (.*)') and tonumber(msg.reply_to_message_id_) > 0 then
+          function cb(a,b,c)
+            if b.content_.ID == 'MessageAnimation' then
+        local m = text:match('^addgif (.*)')
+        set('gifs',b.content_.animation_.animation_.persistent_id_,m)
+       send(msg,'*New gif added !*\nuse " `$'..m..'` " for get this gif')
+          end
+          end
+        bot.getMessage(msg.chat_id_, tonumber(msg.reply_to_message_id_),cb)
+        end
+    if text and text:match('^delgif (.*)') then
+        local m = text:match('^delgif (.*)')
+        del('gifs',m)
+       send(msg,'*Done !* \n`'..m..'` deleted .')
+        end
+        if text == 'gifs' then
+          t = '*gifs list :*\n\n'
+          for k,v in pairs(db.hash.gifs) do
+            t = t..' > '..k..'\n'
+            end
+            if t == '*gifs list :*\n\n' then
+            t = '*gifs list is *`empty `!'
+            end
+            send(msg,t)
+          end
 				if text and text:match('^addsticker (.*)') and tonumber(msg.reply_to_message_id_) > 0 then
 					function cb(a,b,c)
 						if b.content_.ID == 'MessageSticker' then
@@ -3231,12 +3277,113 @@ function run(msg,data)
 						end
 						send(msg,t)
 					end
-				if text and text:match('^(.*)') then
+				  if text == 'files' then
+          t = '*Files list :*\n\n'
+          for k,v in pairs(db.hash.files) do
+            if db.hash.files[k]:match('PHOTO') then
+                filetype = 'Photo'
+            elseif db.hash.files[k]:match('VIDEO') then
+                filetype = 'Video'
+            elseif db.hash.files[k]:match('AUDIO') then
+                filetype = 'Audio'
+            elseif db.hash.files[k]:match('DOCUMENT') then
+                filetype = 'Document'
+            elseif db.hash.files[k]:match('VOICE') then
+                filetype = 'Voice'
+            end
+           t = t..' > '..k..' : '..filetype..'\n'
+            end
+            if t == '*Files list :*\n\n' then
+            t = '*Files list is *`empty `!'
+           end
+           send(msg,t)
+        end
+				if text and text:match('^save (.*)') and tonumber(msg.reply_to_message_id_) > 0 then
+					local m = text:match('^save (.*)')
+					function cb(a,b,c)
+						if b.content_.ID == 'MessagePhoto' then
+            set('files','PHOTO'..b.content_.photo_.sizes_[0].photo_.persistent_id_,m)
+            send(msg,'*New file added !*\nuse " `$get '..m..'` " for get this file')
+            elseif b.content_.ID == 'MessageVideo' then
+            set('files','VIDEO'..b.content_.video_.video_.persistent_id_,m)
+            send(msg,'*New file added !*\nuse " `$get '..m..'` " for get this file')
+            elseif b.content_.ID == 'MessageAudio' then
+            set('files','AUDIO'..b.content_.audio_.audio_.persistent_id_,m)
+            send(msg,'*New file added !*\nuse " `$get '..m..'` " for get this file')
+            elseif b.content_.ID == 'MessageDocument' then
+            set('files','DOCUMENT'..b.content_.document_.document_.persistent_id_,m)
+            send(msg,'*New file added !*\nuse " `$get '..m..'` " for get this file')
+            elseif b.content_.ID == 'MessageVoice' then
+            set('files','VOICE'..b.content_.voice_.voice_.persistent_id_,m)
+            send(msg,'*New file added !*\nuse " `$get '..m..'` " for get this file')
+            else
+							send(msg,'`Type of this file is not supported !`')
+							end
+						end
+						bot.getMessage(msg.chat_id_, tonumber(msg.reply_to_message_id_),cb)
+				end
+				if text and text:match('^delfile (.*)') then
+				local m = text:match('^delfile (.*)')
+				del('files',m)
+			 send(msg,'*Done !* \n`'..m..'` deleted .')
+				end
+				if text and text:match('^get (.*) "(.*)"') then
+					local m = {text:match('^get (.*) "(.*)"')}
+						if db.hash.files[m[1]] then
+  						tdcli_function ({ID="DeleteMessages", chat_id_=msg.chat_id_, message_ids_={[0] = msg.id_}}, dl_cb, nil)
+              if db.hash.files[m[1]]:match('PHOTO') then
+                    local fileid = db.hash.files[m[1]]:gsub('PHOTO','')
+                    bot.sendPhoto(msg.chat_id_,0,fileid,m[2])
+                    elseif db.hash.files[m[1]]:match('VIDEO') then
+                    local fileid = db.hash.files[m[1]]:gsub('VIDEO','')
+                    bot.sendVideo(msg.chat_id_,0,fileid,m[2])
+                    elseif db.hash.files[m[1]]:match('AUDIO') then
+                    local fileid = db.hash.files[m[1]]:gsub('AUDIO','')
+                    bot.sendAudio(msg.chat_id_,0,fileid,m[2])
+                    elseif db.hash.files[m[1]]:match('DOCUMENT') then
+                    local fileid = db.hash.files[m[1]]:gsub('DOCUMENT','')
+                    bot.sendDocument(msg.chat_id_,0,fileid,m[2])
+                    elseif db.hash.files[m[1]]:match('VOICE') then
+                    local fileid = db.hash.files[m[1]]:gsub('VOICE','')
+                    bot.sendVoice(msg.chat_id_,0,fileid,m[2])
+                    end
+							end
+						end
+				if text and text:match('^get (.*)') then
+				local m = {text:match('^get (.*)')}
+				if db.hash.files[m[1]] then
+  						tdcli_function ({ID="DeleteMessages", chat_id_=msg.chat_id_, message_ids_={[0] = msg.id_}}, dl_cb, nil)
+              if db.hash.files[m[1]]:match('PHOTO') then
+                    local fileid = db.hash.files[m[1]]:gsub('PHOTO','')
+                    bot.sendPhoto(msg.chat_id_,0,fileid)
+                    elseif db.hash.files[m[1]]:match('VIDEO') then
+                    local fileid = db.hash.files[m[1]]:gsub('VIDEO','')
+                    bot.sendVideo(msg.chat_id_,0,fileid)
+                    elseif db.hash.files[m[1]]:match('AUDIO') then
+                    local fileid = db.hash.files[m[1]]:gsub('AUDIO','')
+                    bot.sendAudio(msg.chat_id_,0,fileid)
+                    elseif db.hash.files[m[1]]:match('DOCUMENT') then
+                    local fileid = db.hash.files[m[1]]:gsub('DOCUMENT','')
+                    bot.sendDocument(msg.chat_id_,0,fileid)
+                    elseif db.hash.files[m[1]]:match('VOICE') then
+                    local fileid = db.hash.files[m[1]]:gsub('VOICE','')
+                    bot.sendVoice(msg.chat_id_,0,fileid)
+               end	
+							end
+						end
+								if text and text:match('^(.*)') then
 				local m = text:match('^(.*)')
 					if db.hash.stickers[m] then
 					if chat_type == 'super' or chat_type == 'group' then
 				tdcli_function ({ID="DeleteMessages", chat_id_=msg.chat_id_, message_ids_={[0] = msg.id_}}, dl_cb, nil)
 						bot.sendSticker(msg.chat_id_,0,db.hash.stickers[m])
+						else 
+						send(msg,'*This capability working in *`supergroups` !')
+					end
+						elseif db.hash.gifs[m] then
+					if chat_type == 'super' or chat_type == 'group' then
+				tdcli_function ({ID="DeleteMessages", chat_id_=msg.chat_id_, message_ids_={[0] = msg.id_}}, dl_cb, nil)
+						bot.sendAnimation(msg.chat_id_,0,db.hash.gifs[m])
 						else 
 						send(msg,'*This capability working in *`supergroups` !')
 					end
@@ -3289,6 +3436,12 @@ function run(msg,data)
 					for k,v in pairs(db.hash.stickers) do
 						del('stickers',k)
 						send(msg,'*Done !*\n_All stickers deleted Successfully ._')
+						end
+					end
+				if text == 'clean gifs' then
+					for k,v in pairs(db.hash.gifs) do
+						del('gifs',k)
+						send(msg,'*Done !*\n_All gifs deleted Successfully ._')
 						end
 					end
 				 if text == 'invite' and tonumber(msg.reply_to_message_id_) > 0 then
