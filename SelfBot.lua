@@ -2113,6 +2113,7 @@ local function sendVideo(chat_id, reply_to_message_id, video, caption)
     input_message_content_ = {
       ID = "InputMessageVideo",
       video_ = getInputFile(video),
+			added_sticker_file_ids_ = {},
       duration_ = '',
       width_ = '',
       height_ = '',
