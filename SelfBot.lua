@@ -3444,6 +3444,12 @@ function run(msg,data)
 						send(msg,'*Done !*\n_All gifs deleted Successfully ._')
 						end
 					end
+				if text == 'clean files' then
+					for k,v in pairs(db.hash.files) do
+						del('files',k)
+						send(msg,'*Done !*\n_All files deleted Successfully ._')
+						end
+					end
 				 if text == 'invite' and tonumber(msg.reply_to_message_id_) > 0 then
         function inv_by_reply(extra, result, success)
         bot.addChatMembers(msg.chat_id_,{[0] = result.sender_user_id_})
