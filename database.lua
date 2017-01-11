@@ -1,12 +1,20 @@
-do
-    local _ = {
+do local _ = {
   hash = {
     files = {
-    },
+        
+      },
+    gifs = {
+        
+      },
     stickers = {
-    },
+        
+      },
+    typing = {
+        
+      },
     values = {
-    }
+        
+      }
   }
 }
 return _
