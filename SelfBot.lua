@@ -3200,7 +3200,7 @@ function run(msg,data)
 			end
 		end
 	
-		if get('bot_status'..msg.chat_id_) then
+		
 		 if msg.send_state_.ID == "MessageIsSuccessfullySent" then
 				if msg_type == 'text' and text and text:match('^[$]') then
       text = text:gsub('^[$]','')
@@ -3500,6 +3500,7 @@ function run(msg,data)
 				end
 		else
 				-- check values
+		if get('bot_status'..msg.chat_id_) then
 			if text and is_value(text) then
 				local text = get('values',text)
 			bot.sendMessage(msg.chat_id_, msg.id_, 1,text ,1, 'html')
