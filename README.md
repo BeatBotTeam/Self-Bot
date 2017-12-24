@@ -5,7 +5,7 @@
 ```sh
 # Tested on Ubuntu 14.04
 
-git clone https://gitlab.com/BeatBotTeam/SelfBot.git
+git clone https://github.com/BeatBotTeam/SelfBot
 
 cd SelfBot
 
