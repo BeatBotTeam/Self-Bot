@@ -7,7 +7,7 @@
 
 git clone https://github.com/BeatBotTeam/Self-Bot.git
 
-cd SelfBot
+cd Self-Bot
 
 chmod +x launch.sh
 
